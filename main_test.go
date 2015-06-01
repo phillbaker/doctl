@@ -54,8 +54,8 @@ func TestGlobalFormatFlag(t *testing.T) {
 	args := []string{"doctl", "-k", "key", "-f", "invalid"}
 	err := app.Run(args)
 
-	expected := "invalid output format: invalid, available output options: json, yaml"
+	expected := "invalid output format: invalid, available output options: table, json, yaml"
 	if err.Error() != expected {
-		t.Errorf("app.Run(%v) = %#v, want %#v", err.Error(), expected)
+		t.Errorf("app.Run(%v) = %#v, want %#v", args, err.Error(), expected)
 	}
 }

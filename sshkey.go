@@ -82,7 +82,7 @@ func sshCreate(ctx *cli.Context) {
 		os.Exit(1)
 	}
 
-	WriteOutput(key)
+	outputKey(*key)
 }
 
 func sshList(ctx *cli.Context) {
@@ -127,12 +127,7 @@ func sshList(ctx *cli.Context) {
 		opt.Page = page + 1
 	}
 
-	cliOut := NewCLIOutput()
-	defer cliOut.Flush()
-	cliOut.Header("ID", "Name", "Fingerprint")
-	for _, key := range keyList {
-		cliOut.Writeln("%d\t%s\t%s\n", key.ID, key.Name, key.Fingerprint)
-	}
+	outputKeys(keyList)
 }
 
 func sshFind(ctx *cli.Context) {
@@ -155,7 +150,7 @@ func sshFind(ctx *cli.Context) {
 		os.Exit(64)
 	}
 
-	WriteOutput(key)
+	outputKey(*key)
 }
 
 func sshDestroy(ctx *cli.Context) {
@@ -206,4 +201,42 @@ func sshDestroy(ctx *cli.Context) {
 	}
 
 	fmt.Printf("Key %s destroyed.\n", key.Name)
+}
+
+type keyOutputable godo.Key
+
+func (a keyOutputable) Headers() []string           { return []string{"ID", "Name", "Fingerprint"} }
+func (a keyOutputable) FormatString() string        { return "%d\t%s\t%s\n" }
+func (a keyOutputable) RowObject(i int) interface{} { return a }
+func (a keyOutputable) RowValues(datum interface{}) []interface{} {
+	key := datum.(godo.Key)
+	nameLen := len(key.Name)
+	if nameLen > 100 {
+		nameLen = 100
+	}
+	return []interface{}{key.ID, key.Name[0:nameLen], key.Fingerprint}
+}
+func (a keyOutputable) Len() int { return 1 }
+
+func outputKey(key godo.Key) {
+	WriteOutputable(keyOutputable(key))
+}
+
+type keysOutputable []godo.Key
+
+func (a keysOutputable) Headers() []string           { return []string{"ID", "Name", "Fingerprint"} }
+func (a keysOutputable) FormatString() string        { return "%d\t%s\t%s\n" }
+func (a keysOutputable) RowObject(i int) interface{} { return a[i] }
+func (a keysOutputable) RowValues(datum interface{}) []interface{} {
+	key := datum.(godo.Key)
+	nameLen := len(key.Name)
+	if nameLen > 100 {
+		nameLen = 100
+	}
+	return []interface{}{key.ID, key.Name[0:nameLen], key.Fingerprint}
+}
+func (a keysOutputable) Len() int { return len(a) }
+
+func outputKeys(keys []godo.Key) {
+	WriteOutputable(keysOutputable(keys))
 }

@@ -42,7 +42,7 @@ func buildApp() *cli.App {
 			Usage:  "API Key for DO APIv2.",
 			EnvVar: "DIGITALOCEAN_API_KEY, DIGITAL_OCEAN_API_KEY",
 		},
-		cli.StringFlag{Name: "format,f", Value: "yaml", Usage: "Format for output."},
+		cli.StringFlag{Name: "format,f", Value: "table", Usage: "Format for output."},
 		cli.BoolFlag{Name: "debug,d", Usage: "Turn on debug output."},
 	}
 	app.Before = func(ctx *cli.Context) error {
@@ -55,12 +55,14 @@ func buildApp() *cli.App {
 		}
 
 		switch ctx.String("format") {
+		case "table":
+			OutputFormat = ctx.String("format")
 		case "json":
 			OutputFormat = ctx.String("format")
 		case "yaml":
 			OutputFormat = ctx.String("format")
 		default:
-			return fmt.Errorf("invalid output format: %s, available output options: json, yaml", ctx.String("format"))
+			return fmt.Errorf("invalid output format: %s, available output options: table, json, yaml", ctx.String("format"))
 		}
 
 		return nil
